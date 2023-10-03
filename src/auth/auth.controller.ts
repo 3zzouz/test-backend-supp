@@ -20,7 +20,7 @@ import { CreateEmailDto } from './dto/create-email.dto';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-//@ApiTags('auth')
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -29,18 +29,19 @@ export class AuthController {
   signIn(@Body() data: CreateLoginDto) {
     return this.authService.signIn(data);
   }
-  //@ApiBearerAuth('refresh-token')
-  //@UseGuards(RefreshTokenGuard)
+  @ApiBearerAuth('refresh-token')
+  @UseGuards(RefreshTokenGuard)
   @Get('refresh')
   refreshToken(@Req() req: Request) {
     const userId = req.user['sub'];
     const refreshToken = req.user['refreshToken'];
     return this.authService.refreshTokens(userId, refreshToken);
   }
-  //@ApiBearerAuth('access-token')
- // @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AccessTokenGuard)
   @Get('logout')
   logout(@Req() req: Request) {
+    console.log(req .user)
     this.authService.logout(req.user['sub']);
   }
 
@@ -52,13 +53,13 @@ export class AuthController {
     const user = { email: data.email };
     await this.authService.resetPassword(user, tokenPassword);
   }
-  //@ApiBearerAuth('access-token')
-  //@UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AccessTokenGuard)
   @Patch('modifyPassword/:id')
   async newPassword(@Body() data: UpdateUserDto, @Param('id') id: string) {
     await this.authService.updatePassword(id, data);
   }
-  //@ApiBearerAuth('access-token')
+  @ApiBearerAuth('access-token')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -68,7 +69,7 @@ export class AuthController {
       }),
     }),
   )
- // @UseGuards(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard)
   @Patch('updateuserby/:id')
   async updateUser(
     @Param('id') id: string,
